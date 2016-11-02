@@ -1,5 +1,4 @@
 import unittest
-import storage_data
 
 
 class TestMethod(unittest.TestCase):
@@ -7,9 +6,7 @@ class TestMethod(unittest.TestCase):
         super().setUp()
 
     def test_research(self):
-        connect = storage_data.connect('localhost', 27017, 'test', 'demo')
-        data = {"name": "lucy", "sex": "female", "job": "nurse"}
-        connect.insert(data)
+        pass
 
 
 if __name__ == '__main__':
