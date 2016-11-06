@@ -20,11 +20,12 @@ class QueueManager(BaseManager):
 def init():
     queue = Queue()
 
+    QueueManager.register('get_queue', queue)
+    m = QueueManager(address=('', 5000), authkey=b'abc')
+
     w = Worker(queue)
     w.start()
 
-    QueueManager.register('get_queue', callable=lambda: queue)
-    m = QueueManager(address=('', 5000), authkey=b'abc')
     s = m.get_server()
     s.serve_forever()
 

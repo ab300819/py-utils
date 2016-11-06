@@ -8,6 +8,7 @@ class Worker(Process):
     def __init__(self, task, result):
         self.task = task
         self.result = result
+        self.done = False
         super(Worker, self).__init__()
 
     def run(self):
@@ -18,7 +19,6 @@ class Worker(Process):
         for j in range(10):
             r = self.result.get()
             print('Get result %s' % r)
-        print('Done!')
 
 
 class QueueManager(BaseManager):
@@ -26,13 +26,13 @@ class QueueManager(BaseManager):
 
 
 def start_distributed():
+    task_queue = Queue()
+    result_queue = Queue()
     # 把两个Queue都注册到网络上, callable参数关联了Queue对象:
     QueueManager.register('get_task_queue', callable=lambda: task_queue)
     QueueManager.register('get_result_queue', callable=lambda: result_queue)
     # 绑定端口5000, 设置验证码'abc':
     manager = QueueManager(address=('', 5000), authkey=b'abc')
-    task_queue = Queue()
-    result_queue = Queue()
     w = Worker(task_queue, result_queue)
     w.start()
     s = manager.get_server()
