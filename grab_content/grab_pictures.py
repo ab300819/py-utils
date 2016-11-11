@@ -1,22 +1,23 @@
 #!-*- coding:utf-8 -*-
 # !/usr/bin/env python3
 
+import logging as log
 import os
-import sys
 import re
 import time
-import logging as log
 import urllib.error as Error
-from pyquery import PyQuery as pq
 from urllib import request
-from html.parser import HTMLParser as Parser
+
+from pyquery import PyQuery as pq
 
 log.basicConfig(level=log.INFO)
 
 
 def get_main_page(url):
     user_agent = {'User-Agent':
-                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36'}
+                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                      'AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/54.0.2840.71 Safari/537.36'}
 
     response = request.Request(url, headers=user_agent)
 
