@@ -1,10 +1,10 @@
-#! /usr/bin/env python3
+#!-*- coding:utf-8 -*-
+# ! /usr/bin/env python3
 
 import os
 import re
 import urllib.error as error
 
-from lxml.html.diff import tag_token
 from pyquery import PyQuery as pq
 from urllib import request
 
@@ -77,11 +77,19 @@ class Spider:
         else:
             total = None
         if total:
-            for i in range(2, int(total.group(1)) + 1):
-                all_page.append(head.group(1) + '_' + str(i) + '.html')
+            if start and isinstance(start, int) and not end:
+                for i in range(start, int(total.group(1)) + 1):
+                    all_page.append(head.group(1) + '_' + str(i) + '.html')
+            elif start and end and isinstance(start, int) and isinstance(end, int):
+                for i in range(start, end + 1):
+                    all_page.append(head.group(1) + '_' + str(i) + '.html')
+            else:
+                for i in range(2, int(total.group(1)) + 1):
+                    all_page.append(head.group(1) + '_' + str(i) + '.html')
         return all_page
 
     def get_target_item(self, all_url, target):
+
         result = {}
         if isinstance(target, list):
             for item in all_url:
@@ -156,12 +164,14 @@ if __name__ == '__main__':
     root = 'D:\\Temp\\crawler'
     all_content = []
     link = []
+    i = 1
     adult = Spider(url)
     catalog = adult.get_catalog(url)
     result = adult.get_target_item(catalog, target)
     all_page = adult.get_all_pages(result)
     for page in all_page:
-        print('正在解析：%s' % page)
+        print('爬取第%d页\n正在解析：%s' % i, page)
+        i += 1
         for key, value in adult.get_content_url(page).items():
             print('正在获取内容：%s' % value)
             file_name = adult.link_to_book_name(root, key, value)
