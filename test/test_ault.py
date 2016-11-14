@@ -1,5 +1,5 @@
 import unittest
-from urllib import request
+
 from grab_content import grab_adult as adult
 
 
@@ -7,14 +7,17 @@ class TestAdult(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.url = 'http://103av.com'
-        self.book = 'http://www.103av.com/html/article/jiqing/2016/0901/385300.html'
+        self.book = 'http://103av.com/html/article/jiqing/2016/1010/389315.html'
         self.picture = ''
-        self.movie = ''
+        self.movie = 'http://107av.com/list/1.html'
         self.test = adult.Spider(self.url)
 
     def test_get_book(self):
         content = self.test.analyse_book(self.book)
-        print(content)
+        print('获取内容:%s' % content)
+        for x in content:
+            if x:
+                print(x)
 
     def test_get_all_page(self):
         test_url_1 = 'http://103av.com/html/article/jiqing/index.html'
@@ -25,8 +28,7 @@ class TestAdult(unittest.TestCase):
         print(page_2)
 
     def test_get_catalog(self):
-        html = self.test.get_page()
-        print(self.test.get_catalog(html))
+        print(self.test.get_catalog(self.url))
 
     def test_save_book(self):
         self.test.write_book('D:\\Temp\\test.txt', self.book)
@@ -45,3 +47,28 @@ class TestAdult(unittest.TestCase):
         test_url = 'http://www.103av.com/html/article/jiqing/index.html'
         result = self.test.get_content_url(test_url)
         print(result)
+
+    def test_special(self):
+        url = 'http://www.103av.com/html/article/jiqing/index_11.html'
+        result = self.test.get_content_url(url)
+        for key, value in result.items():
+            print('%s:%s' % (key, value))
+
+    def test_get_movie_url(self):
+        result = self.test.get_movie_url(self.movie)
+        for i in result:
+            print(i)
+
+    def test_analyse_movie(self):
+        url = 'http://107av.com/vod/10793.html'
+        link = self.test.analyse_movie(url)
+        print(link)
+
+    def test_analyse_picture(self):
+        url_1 = 'http://107av.com/vod/10793.html'
+        url_2 = 'http://107av.com/html/tupian/toupai/2016/1028/390432.html'
+        picture = self.test.analyse_picture(url_2, '.artbody.imgbody p')
+        movie = self.test.analyse_picture(url_1, '.endtext.vodimg p')
+        print(picture)
+        print('-----------')
+        print(movie)
