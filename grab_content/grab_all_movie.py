@@ -1,12 +1,12 @@
 #! -*- coding: utf-8 -*-
 
-from urllib import request, parse
-from pyquery import PyQuery as pq
-from html.parser import HTMLParser
-import urllib.error as HttpError
-import re
 import logging as log
-import storage_data
+import re
+import urllib.error as HttpError
+from html.parser import HTMLParser
+from urllib import request, parse
+
+from pyquery import PyQuery as pq
 
 log.basicConfig(level=log.INFO)
 
