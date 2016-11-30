@@ -6,10 +6,10 @@ from grab_content import grab_adult as adult
 class TestAdult(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        self.url = 'http://103av.com'
-        self.book = 'http://103av.com/html/article/jiqing/2016/1010/389315.html'
+        self.url = 'http://103.com'
+        self.book = 'http://103.com/html/article/jiqing/2016/1010/389315.html'
         self.picture = ''
-        self.movie = 'http://107av.com/list/1.html'
+        self.movie = 'http://103.com/list/1.html'
         self.test = adult.Spider(self.url)
 
     def test_get_book(self):
@@ -20,9 +20,9 @@ class TestAdult(unittest.TestCase):
                 print(x)
 
     def test_get_all_page(self):
-        test_url_1 = 'http://103av.com/html/article/jiqing/index.html'
-        test_url_2 = 'http://103av.com/html/article/jiqing/2016/1102/390718.html'
-        page_1 = self.test.get_all_pages(test_url_1, 9, 20)
+        test_url_1 = 'http://103.com/html/article/jiqing/index.html'
+        test_url_2 = 'http://103.com/html/article/jiqing/2016/1102/390718.html'
+        page_1 = self.test.get_all_pages(test_url_1)
         print(page_1)
         page_2 = self.test.get_all_pages(test_url_2)
         print(page_2)
@@ -36,20 +36,20 @@ class TestAdult(unittest.TestCase):
     def test_get_target_item(self):
         catalog = self.test.get_catalog(self.url)
         print(catalog)
-        target_1 = '偷拍自拍'
-        target_2 = ['偷拍自拍', '激情文学', '亚洲情色']
+        target_1 = ''
+        target_2 = ['', '', '']
         result_1 = self.test.get_target_item(catalog, target_1)
         print(result_1)
         result_2 = self.test.get_target_item(catalog, target_2)
         print(result_2)
 
     def test_get_content_url(self):
-        test_url = 'http://www.103av.com/html/article/jiqing/index.html'
+        test_url = 'http://www.103.com/html/article/jiqing/index.html'
         result = self.test.get_content_url(test_url)
         print(result)
 
     def test_special(self):
-        url = 'http://www.103av.com/html/article/jiqing/index_11.html'
+        url = 'http://www.103.com/html/article/jiqing/index_11.html'
         result = self.test.get_content_url(url)
         for key, value in result.items():
             print('%s:%s' % (key, value))
@@ -60,15 +60,20 @@ class TestAdult(unittest.TestCase):
             print(i)
 
     def test_analyse_movie(self):
-        url = 'http://107av.com/vod/10793.html'
+        url = 'http://103.com/vod/10793.html'
         link = self.test.analyse_movie(url)
         print(link)
 
     def test_analyse_picture(self):
-        url_1 = 'http://107av.com/vod/10793.html'
-        url_2 = 'http://107av.com/html/tupian/toupai/2016/1028/390432.html'
+        url_1 = 'http://103.com/vod/10793.html'
+        url_2 = 'http://103.com/html/tupian/toupai/2016/1028/390432.html'
         picture = self.test.analyse_picture(url_2, '.artbody.imgbody p')
         movie = self.test.analyse_picture(url_1, '.endtext.vodimg p')
         print(picture)
         print('-----------')
         print(movie)
+
+    def test_write_picture(self):
+        url = 'http://i1.1100lu.xyz/1100/vod/201611/07/vod/qmzqee2zbwv.jpg'
+        file_name = 'D:\\Temp\\test.jpg'
+        self.test.write_image(file_name, url)

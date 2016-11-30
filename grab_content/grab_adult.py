@@ -33,6 +33,7 @@ class Spider:
             html = None
         return html
 
+    # 获取主页目录
     def get_catalog(self, root_url):
         catalog = []
         page = self.get_page(root_url)
@@ -63,6 +64,7 @@ class Spider:
             result[key] = self.root_url + link.attr('href')
         return result
 
+    # 获取每页电影url
     def get_movie_url(self, url):
         result = []
         html = self.get_page(url)
@@ -81,28 +83,41 @@ class Spider:
     def get_all_pages(self, url, start=None, end=None):
 
         all_page = []
-        all_page.append(url)
         head = re.search(r'(.*)\.html', url)
         page = self.get_page(url)
         html = pq(page)
         page_num = html('#pages').html()
-        if page_num:
-            if re.search(r'index', url):
+        if re.search(r'index', url):
+            if page_num:
                 total = re.search(r'\d/(\d+)', page_num)
             else:
-                total = re.search(r'<b>\d</b>/<b>(\d+)</b>', page_num)
+                total = None
+                all_page.append(url)
+            if total:
+                if start and isinstance(start, int) and not end:
+                    for i in range(start, int(total.group(1)) + 1):
+                        if i == 1:
+                            all_page.append(url)
+                        all_page.append(head.group(1) + '_' + str(i) + '.html')
+                elif start and end and isinstance(start, int) and isinstance(end, int):
+                    for i in range(start, end + 1):
+                        if i == 1:
+                            all_page.append(url)
+                        all_page.append(head.group(1) + '_' + str(i) + '.html')
+                else:
+                    all_page.append(url)
+                    for i in range(2, int(total.group(1)) + 1):
+                        all_page.append(head.group(1) + '_' + str(i) + '.html')
         else:
-            total = None
-        if total:
-            if start and isinstance(start, int) and not end:
-                for i in range(start, int(total.group(1)) + 1):
-                    all_page.append(head.group(1) + '_' + str(i) + '.html')
-            elif start and end and isinstance(start, int) and isinstance(end, int):
-                for i in range(start, end + 1):
-                    all_page.append(head.group(1) + '_' + str(i) + '.html')
+            all_page.append(url)
+            if page_num:
+                total = re.search(r'<b>\d</b>/<b>(\d+)</b>', page_num)
             else:
+                total = None
+            if total:
                 for i in range(2, int(total.group(1)) + 1):
                     all_page.append(head.group(1) + '_' + str(i) + '.html')
+
         return all_page
 
     def get_target_item(self, all_url, target):
@@ -148,6 +163,7 @@ class Spider:
                     result.append('http:' + src)
         return result
 
+    # 获取电影下载地址
     def analyse_movie(self, url):
         html = self.get_page(url)
         page = pq(html)
@@ -207,8 +223,8 @@ def grab_picture(start, end):
 
 
 if __name__ == '__main__':
-    url = 'http://www.103av.com'
-    target = '激情文学'
+    url = ''
+    target = '文学'
     root = '/home/pi/Documents/grab_data/book'
     all_content = []
     link = []
