@@ -9,7 +9,7 @@ from pyquery import PyQuery as pq
 from urllib import request
 
 
-class Spider:
+class Adult:
     def __init__(self, root_url):
         self.root_url = root_url
 
@@ -29,7 +29,7 @@ class Spider:
             content = request.urlopen(response, timeout=10)
             html = content.read().decode('utf-8', 'ignore')
         except error:
-            print('请求网页失败\n错误代码：%d' % error.HTTPError.code)
+            print('请求网页失败\n错误代码：%d' % error.HTTPError.code)       
             html = None
         return html
 
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     all_content = []
     link = []
     i = 1
-    adult = Spider(url)
+    adult = Adult(url)
     catalog = adult.get_catalog(url)
     result = adult.get_target_item(catalog, target)
     all_page = adult.get_all_pages(result)

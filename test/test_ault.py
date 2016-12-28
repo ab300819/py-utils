@@ -1,6 +1,6 @@
 import unittest
 
-from grab_content import grab_adult as adult
+from spider import grab_adult as adult
 
 
 class TestAdult(unittest.TestCase):
@@ -10,7 +10,7 @@ class TestAdult(unittest.TestCase):
         self.book = 'http://103.com/html/article/jiqing/2016/1010/389315.html'
         self.picture = ''
         self.movie = 'http://103.com/list/1.html'
-        self.test = adult.Spider(self.url)
+        self.test = adult.Adult(self.url)
 
     def test_get_book(self):
         content = self.test.analyse_book(self.book)
