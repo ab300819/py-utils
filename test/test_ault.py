@@ -6,7 +6,7 @@ from spider import grab_adult as adult
 class TestAdult(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        self.url = 'http://103.com'
+        self.url = 'http://1111av.co/'
         self.book = 'http://103.com/html/article/jiqing/2016/1010/389315.html'
         self.picture = ''
         self.movie = 'http://103.com/list/1.html'
@@ -20,8 +20,8 @@ class TestAdult(unittest.TestCase):
                 print(x)
 
     def test_get_all_page(self):
-        test_url_1 = 'http://103.com/html/article/jiqing/index.html'
-        test_url_2 = 'http://103.com/html/article/jiqing/2016/1102/390718.html'
+        test_url_1 = 'http://1111av.co/html/tupian/toupai/index.html'
+        test_url_2 = 'http://1111av.co/html/article/jiqing/2016/1102/390718.html'
         page_1 = self.test.get_all_pages(test_url_1)
         print(page_1)
         page_2 = self.test.get_all_pages(test_url_2)
@@ -35,16 +35,16 @@ class TestAdult(unittest.TestCase):
 
     def test_get_target_item(self):
         catalog = self.test.get_catalog(self.url)
-        print(catalog)
-        target_1 = ''
-        target_2 = ['', '', '']
+        # print(catalog)
+        target_1 = '偷拍自拍'
+        target_2 = ['亚洲情色', '偷拍自拍', '激情文学']
         result_1 = self.test.get_target_item(catalog, target_1)
         print(result_1)
         result_2 = self.test.get_target_item(catalog, target_2)
         print(result_2)
 
     def test_get_content_url(self):
-        test_url = 'http://www.103.com/html/article/jiqing/index.html'
+        test_url = 'http://1111av.co/html/tupian/toupai/index.html'
         result = self.test.get_content_url(test_url)
         print(result)
 
@@ -77,3 +77,8 @@ class TestAdult(unittest.TestCase):
         url = 'http://i1.1100lu.xyz/1100/vod/201611/07/vod/qmzqee2zbwv.jpg'
         file_name = 'D:\\Temp\\test.jpg'
         self.test.write_image(file_name, url)
+
+    def test_split_url(self):
+        url = self.test.split_url('http://1111av.co/html/article/jiqing/index.html')
+        print(url)
+
