@@ -3,7 +3,9 @@
 import os
 import re
 import time
+import json
 import spider.utils as tool
+import spider.ui as ui
 
 from datetime import datetime
 from enum import Enum
@@ -211,6 +213,8 @@ class Adult:
             'title': '',
             # 资源类型（小说，类型，图片）
             'type': '',
+            # 类别
+            'belong': '',
             # 资源主页
             'main_url': '',
             # 资源下载地址
@@ -303,4 +307,10 @@ if __name__ == '__main__':
     #         file_name = adult.generate_book_name(root, key, value)
     #         adult.write_book(file_name, value)
 
-    database = TaskQueue('sources', 'adult')
+    # database = TaskQueue('sources', 'adult')
+    target_file = ui.get_choose_file()
+    if not target_file:
+        print('请输入资源文件名！')
+    else:
+        with open(target_file, 'r', encoding='utf-8') as f:
+            target = json.dumps(f.read())
