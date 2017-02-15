@@ -81,7 +81,11 @@ def get_login_info(verify=None):
     root.geometry('210x245')
     app = Login(master=root, verify_file=verify)
     app.mainloop()
-    return [app.get_username(), app.get_password(), app.get_verify_code()]
+    return {
+        'username': app.get_username(),
+        'password': app.get_password(),
+        'code': app.get_verify_code()
+    }
 
 
 class ChooseTarget(tk.Frame):
