@@ -1,7 +1,7 @@
 import os, re, time, json
 import http.cookiejar
 import requests
-
+import html
 from pyquery import PyQuery as pq
 from spider import ui
 
@@ -98,12 +98,39 @@ class GrabZhiHu:
         # 保存cookie
         self.session.cookies.save()
 
-    def test(self):
-        result = self.session.get(self.main_url, headers=self.user_agent, allow_redirects=False)
-        print(result.content.decode("utf-8"))
+    def test(self, url):
+        self.check_login()
+        if url:
+            result = self.session.get(url, headers=self.user_agent, allow_redirects=False)
+        else:
+            result = self.session.get(self.main_url, headers=self.user_agent, allow_redirects=False)
+        print(html.unescape(result.content.decode("utf-8")))
 
+    # 抓取专栏文章的url
+    def analyze_article_ur(self):
+        pass
+
+    # 分析文章界面抓取文章内容
+    def get_article(self):
+        pass
+
+    # 保存内容
+    def save_content(self, article_info):
+        pass
+
+    # 传入收藏夹主页，分析每个问题及其答案
+    def analyse_collection_url(self):
+        pass
+
+    # 传入单个问题url，抓取收藏夹问题和答案
+    def get_collection_question_answer(self):
+        pass
+
+    # 抓取目标问题及答案
+    def get_question_answer(self):
+        pass
 
 if __name__ == '__main__':
-    zhihu = GrabZhiHu()
-    zhihu.check_login()
-    zhihu.test()
+    test = GrabZhiHu()
+    url = 'https://www.zhihu.com/collection/41051858'
+    test.test(url)
