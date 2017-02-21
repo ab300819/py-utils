@@ -42,6 +42,12 @@ http://www.zhihu.com/login/phone_num
 
 邮箱登陆
 https://www.zhihu.com/login/email
+
+用户文章列表获取url,返回json数据
+https://www.zhihu.com/api/v4/members/sgai/articles?include=data[*].comment_count,collapsed_counts,reviewing_comments_count,can_comment,comment_permission,content,voteup_count,created,updated,upvoted_followees,voting;data[*].author.badge[?(type=best_answerer)].topics&offset=0&limit=10&sort_by=created
+
+文章json数据获取
+https://zhuanlan.zhihu.com/api/posts/
 '''
 
 
@@ -49,14 +55,17 @@ class GrabZhiHu:
     def __init__(self):
         self.main_url = 'https://www.zhihu.com'
         self.login_url = 'https://www.zhihu.com/login/email'
+        self.article_main_url = 'https://zhuanlan.zhihu.com/api/posts/'
+        self.user_main_url = 'https://www.zhihu.com/people/'
         self.user_agent = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         }
         self.cookie_file = '../resources/zhihu_cookie'
         self.session = requests.Session()
         self.session.cookies = http.cookiejar.LWPCookieJar(filename=self.cookie_file)
+        self.__check_login()
 
-    def check_login(self):
+    def __check_login(self):
         try:
             # 加载Cookies文件
             self.session.cookies.load(ignore_discard=True)
@@ -64,9 +73,9 @@ class GrabZhiHu:
 
         except:
             print("未找到或cookie已过期!")
-            self.login()
+            self.__login()
 
-    def login(self):
+    def __login(self):
 
         # 获取_xsrf
         result = self.session.get(self.main_url, headers=self.user_agent)
@@ -99,20 +108,54 @@ class GrabZhiHu:
         self.session.cookies.save()
 
     def test(self, url):
-        self.check_login()
         if url:
             result = self.session.get(url, headers=self.user_agent, allow_redirects=False)
         else:
             result = self.session.get(self.main_url, headers=self.user_agent, allow_redirects=False)
         print(html.unescape(result.content.decode("utf-8")))
 
-    # 抓取专栏文章的url
-    def analyze_article_ur(self):
-        pass
+    # 抓取用户发表文章
+    def analyze_article_url(self, user_posts):
+        user_posts_url = self.user_main_url + user_posts
+        user_posts_html = self.session \
+            .get(user_posts_url, headers=self.user_agent, allow_redirects=False) \
+            .content \
+            .decode('utf-8')
+        user_posts_page = pq(user_posts_html)
+        user_posts_data = user_posts_page('#data').attr['data-state']
+        user_posts_json_data = json.loads(user_posts_data)
 
-    # 分析文章界面抓取文章内容
-    def get_article(self):
-        pass
+        print(user_posts_json_data)
+
+    # 获取文章json数据
+    def get_article_json(self, article_id):
+        article = {}
+        article_author = {}
+        article_content = {}
+
+        article_url = self.article_main_url + str(article_id)
+        article_html = self.session \
+            .get(article_url, headers=self.user_agent, allow_redirects=False) \
+            .content \
+            .decode('utf-8')
+        article_json_data = json.loads(article_html)
+
+        article_author_data = article_json_data['author']
+        article_author['id'] = article_author_data['slug']
+        article_author['name'] = article_author_data['name']
+        article['author'] = article_author
+
+        article_content['id'] = article_json_data['slug']
+        article_content['title'] = article_json_data['title']
+        article_content['time'] = article_json_data['publishedTime']
+        article_content['content'] = article_json_data['content']
+        article['content'] = article_content
+        article['like'] = article_json_data['likesCount']
+
+        column = article_json_data['column']
+        article['column'] = column['slug']
+        print(article)
+        return article
 
     # 保存内容
     def save_content(self, article_info):
@@ -130,7 +173,14 @@ class GrabZhiHu:
     def get_question_answer(self):
         pass
 
+
 if __name__ == '__main__':
     test = GrabZhiHu()
-    url = 'https://www.zhihu.com/collection/41051858'
-    test.test(url)
+    url = 25181905
+    # test.get_article_json(url)
+    user_url = 'sgai/pins/posts'
+    test.analyze_article_url(user_url)
+    user_article_list = 'https://www.zhihu.com/api/v4/members/sgai/articles?' \
+                        'include=data[*].comment_count,content,voteup_count,created,updated,voting;' \
+                        'data[*].author.badge[?(type=best_answerer)].topics&offset=0&limit=10&sort_by=created'
+
