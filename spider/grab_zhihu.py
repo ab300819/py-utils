@@ -2,6 +2,7 @@ import os, re, time, json
 import http.cookiejar
 import requests
 import html
+import pymongo
 from pyquery import PyQuery as pq
 from spider import ui
 
@@ -102,7 +103,7 @@ class GrabZhiHu:
 
         # 登录
         response = self.session.post(self.login_url, data=login_data, headers=self.user_agent)
-        print(response.content.decode("unicode-escape"))
+        print(response.content.decode('unicode-escape'))
 
         # 保存cookie
         self.session.cookies.save()
@@ -174,6 +175,11 @@ class GrabZhiHu:
         pass
 
 
+class WriteToDataBase:
+    def __init__(self):
+        pass
+
+
 if __name__ == '__main__':
     test = GrabZhiHu()
     url = 25181905
@@ -183,4 +189,3 @@ if __name__ == '__main__':
     user_article_list = 'https://www.zhihu.com/api/v4/members/sgai/articles?' \
                         'include=data[*].comment_count,content,voteup_count,created,updated,voting;' \
                         'data[*].author.badge[?(type=best_answerer)].topics&offset=0&limit=10&sort_by=created'
-
