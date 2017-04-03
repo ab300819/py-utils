@@ -201,7 +201,7 @@ class Adult:
         response = self.session.get(url, headers=self.user_agent)
         picture_html = pq(response.content.decode('utf-8'))
 
-        # 书籍标题
+        # 图集标题
         picture_title = re.split(r'[>\xa0 ]+', picture_html('.art_box h2').remove('a').text())
 
         # 获取所有图片的
@@ -320,4 +320,19 @@ class DownloadController:
 
 
 if __name__ == '__main__':
-    pass
+    picture_url = [
+        'http://2222av.co/html/tupian/qingchun/2016/1031/390647.html',
+        'http://2222av.co/html/tupian/qingchun/2016/1031/390637.html',
+        'http://2222av.co/html/tupian/qingchun/2016/1031/390616.html'
+    ]
+    book_url = [
+        'http://2222av.co/html/article/jiqing/2017/0224/394592.html',
+        'http://2222av.co/html/article/jiqing/2017/0224/394597.html',
+        'http://2222av.co/html/article/jiqing/2017/0224/394577.html'
+    ]
+
+    root_path = ui.get_choose_path()
+
+    test = Adult(root_path)
+    for i in picture_url:
+        test.get_picture(i)
