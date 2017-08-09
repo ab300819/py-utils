@@ -6,7 +6,7 @@ import requests
 from pyquery import PyQuery as pq
 
 
-class NiaoXueFeng:
+class Knowledge:
     def __init__(self, target_path, start_url):
         self.target_path = target_path
         self.start_url = start_url
@@ -64,4 +64,4 @@ class NiaoXueFeng:
 
 if __name__ == '__main__':
 
-    # start_url = 'http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000'
+    start_url = 'http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000'
