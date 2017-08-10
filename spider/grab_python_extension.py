@@ -26,14 +26,6 @@ from pyquery import PyQuery as pq
             佛祖保佑       永无BUG
 '''
 
-{
-    "module": "",
-    "version": "",
-    "name": "",
-    "url": ""
-
-}
-
 html_url = 'http://www.lfd.uci.edu/~gohlke/pythonlibs/'
 head = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36'
