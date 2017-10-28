@@ -1,4 +1,6 @@
-/.idea
-/experiment
+.idea/
+cache/
 /source.json
 /test/.cache/
+resources/zhihu_code.gif
+resources/zhihu_cookie

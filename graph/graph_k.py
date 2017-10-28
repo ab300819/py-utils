@@ -16,6 +16,13 @@ import datetime
 import pylab
 
 day_line_file = ''
-stock_b_code=''
-MA1=10
-MA2=50
+stock_b_code = '000001'
+MA1 = 10
+MA2 = 50
+
+start_date = datetime.date(2017, 1, 16)
+end_date = datetime.date(2017, 1, 20)
+
+
+def read_stk_data(root_path, stock_code, start_day, end_day):
+    return_data = pd.DataFrame()
