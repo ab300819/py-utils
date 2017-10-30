@@ -24,5 +24,10 @@ start_date = datetime.date(2017, 1, 16)
 end_date = datetime.date(2017, 1, 20)
 
 
+def moving_average(data, n):
+    result = np.cumsum(np.insert(data, 0, 0))
+    return (result[n:] - result[:-n]) / n
+
+
 def read_stk_data(root_path, stock_code, start_day, end_day):
     return_data = pd.DataFrame()
