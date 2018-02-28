@@ -1,3 +1,0 @@
-[submodule "jupyter/pydata-book"]
-	path = jupyter/pydata-book
-	url = https://github.com/wesm/pydata-book.git
