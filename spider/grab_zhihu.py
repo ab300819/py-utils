@@ -1,4 +1,7 @@
-import os, re, time, json
+import os
+import re
+import time
+import json
 import http.cookiejar
 import requests
 import html
@@ -15,18 +18,18 @@ from spider import ui
                ____/`---'\____
              .'  \\|     |//  `.
             /  \\|||  :  |||//  \
-           /  _||||| -:- |||||-  \
+           /  _||||| -:- |||||_  \
            |   | \\\  -  /// |   |
-           | \_|  ''\---/''  |   |
+           | \_|  ''\---/''  |_/ |
            \  .-\__  `-`  ___/-. /
-         ___`. .'  /--.--\  `. . __
-      ."" '<  `.___\_<|>_/___.'  >'"".
-     | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+         ___`. .'  /--.--\  `. .'___
+      ."" '<  `.___\_<|>_/___.'  >' "".
+     | | :  `- \`.;`\ _ /`;.`/ -`  : | |
      \  \ `-.   \_ __\ /__ _/   .-` /  /
 ======`-.____`-.___\_____/___.-`____.-'======
                    `=---='
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            佛祖保佑       永无BUG
+             佛祖保佑     永无BUG
 '''
 
 '''
@@ -181,11 +184,12 @@ class WriteToDataBase:
 
 
 if __name__ == '__main__':
-    test = GrabZhiHu()
-    url = 25181905
+    # test = GrabZhiHu()
+    # url = 25181905
     # test.get_article_json(url)
-    user_url = 'sgai/pins/posts'
-    test.analyze_article_url(user_url)
+    # user_url = 'sgai/pins/posts'
+    # test.analyze_article_url(user_url)
     user_article_list = 'https://www.zhihu.com/api/v4/members/sgai/articles?' \
                         'include=data[*].comment_count,content,voteup_count,created,updated,voting;' \
                         'data[*].author.badge[?(type=best_answerer)].topics&offset=0&limit=10&sort_by=created'
+    print(user_article_list)
