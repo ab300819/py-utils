@@ -1,12 +1,11 @@
-import os
-import re
-import time
-import json
-import http.cookiejar
-import requests
 import html
-import pymongo
+import http.cookiejar
+import json
+import time
+
+import requests
 from pyquery import PyQuery as pq
+
 from spider import ui
 
 '''
