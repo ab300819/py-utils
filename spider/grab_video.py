@@ -1,7 +1,9 @@
+import time
+
 import mysql.connector as database
 import requests as rqs
+from mysql.connector import IntegrityError, InterfaceError
 from pyquery import PyQuery as pq
-import time
 
 '''
                    _ooOoo_
@@ -29,7 +31,10 @@ import time
 MAIN_URL = 'http://www.888tv.co/videos?page='
 TOTAL_PAGE = 45
 START_PAGE = 1
+SLEEP_TIME = 9
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+US_TAG = 'HD_US'
+CN_TAG = 'HD_CN'
 HEADER = {'user-agent': USER_AGENT}
 
 # SQL
@@ -40,7 +45,7 @@ SELECT_VIDEO_LIST = ''
 
 
 def get_html_response(url):
-    html_source = rqs.get(MAIN_URL, headers=HEADER)
+    html_source = rqs.get(url, headers=HEADER)
     return html_source.text
 
 
@@ -57,33 +62,50 @@ def get_video_list(html):
         single_video.append(remove_str(video('b').text(), '%'))
         single_video.append(0)
         print(single_video)
-        video_list_result.append(single_video)
+        video_list_result.append(tuple(single_video))
     return video_list_result
 
 
 def get_video_file(html):
     html_parse = pq(html)
+    video_source_list = html_parse('source')
+    video_source = ''
+    for i in video_source_list:
+        element = pq(i)
+        if element.attr('label') is CN_TAG:
+            video_source = element.attr('src')
+            break
 
 
 def remove_str(source, target):
     return source.rstrip(target)
 
 
+def get_video():
+    pass
+
+
+def get_list():
+    pass
+
+
 if __name__ == '__main__':
-
-    all_video = []
-
-    for i in range(START_PAGE, TOTAL_PAGE+1):
-        html_res = get_html_response(MAIN_URL + str(i))
-        video_result = get_video_list(html_res)
-        all_video.extend(video_result)
-        print(i)
-        time.sleep(9)
 
     connect = database.connect(host='192.168.9.109', user='root', password='110119', database='test')
     cursor = connect.cursor()
-    for value in all_video:
-        cursor.execute(INSERT_VIDEO_LIST, value)
-    print(cursor.rowcount)
-    connect.commit()
+
+    for i in range(START_PAGE, TOTAL_PAGE + 1):
+        request_url = MAIN_URL + str(i)
+        print(request_url)
+        html_res = get_html_response(request_url)
+        video_result = get_video_list(html_res)
+        print(i)
+        try:
+            cursor.executemany(INSERT_VIDEO_LIST, video_result)
+        except IntegrityError:
+            print("重复")
+        except InterfaceError:
+            print("重复")
+        connect.commit()
+        time.sleep(SLEEP_TIME)
     connect.close()
