@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 import time
 import xmlrpc.client as rpc
@@ -29,34 +30,49 @@ from pyquery import PyQuery as pq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
              佛祖保佑     永无BUG
 '''
-
-PREFIX = 'http:'
-MAIN_URL = 'http://www.888tv.co/videos?page='
-TOTAL_PAGE = 46
-START_PAGE = 1
-SLEEP_TIME = 9
+# http
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
-US_TAG = 'HD_US'
-CN_TAG = 'HD_CN'
 HEADER = {'user-agent': USER_AGENT}
 
+# target
+PREFIX = 'http:'
+MAIN_URL = 'http://www.888tv.co/videos/'
+TYPE = ['3d', 'amateur', 'japanese', 'selfie', 'western']
+PARAM = {'page': 1}
+TOTAL_PAGE = 32
+START_PAGE = 1
+SLEEP_TIME = 9
+US_TAG = 'HD_US'
+CN_TAG = 'HD_CN'
+
+# download
 REMOTE = 'localhost'
 ARIA2_URL = 'http://' + REMOTE + ':6800/rpc'
 ARIA2_TOKEN = 'token:a6516320-9d0f-48dc-bf56-2cdd5314e131'
 FILE_PATH = '/home/think/Samba/downloads/'
 ARIA2_DIR = 'dir'
 
-# SQL
-INSERT_VIDEO_LIST = "INSERT INTO video_list(title,url,rate,download_status) values (%s,%s,%s,%s)"
-UPDATE_VIDEO_LIST = ''
+# Database
+CONNECT = database.connect(host='192.168.9.109', user='root', password='110119', database='test')
+CURSOR = CONNECT.cursor()
+
+# Sql
+INSERT_VIDEO_LIST = 'INSERT INTO video_list(title,video_id,url,video_type,rate,download_status) values (%s,%s,%s,%s,%s,%s)'
+UPDATE_VIDEO_LIST = 'UPDATE video_list SET video_id=%s,video_type=%s where title=%s'
 DELETE_VIDEO_LIST = ''
 SELECT_VIDEO_LIST = ''
 
-VIDEO_URL_RULE = re.compile('^[http|//].+video\d+\.ts$')
+# regex
+VIDEO_FILE_URL_RULE = re.compile('^[http|//].+video\d+\.ts$')
+VIDEO_URL_RULE = re.compile('^/video/(\d+)/.+')
 
 
-def get_html_response(url):
-    html_source = rqs.get(url, headers=HEADER)
+def get_html_response(url, param=None):
+    if param is None:
+        html_source = rqs.get(url, headers=HEADER)
+    else:
+        html_source = rqs.get(url, headers=HEADER, params=param)
+    print(html_source.url)
     return html_source.text
 
 
@@ -127,11 +143,7 @@ def get_list():
     pass
 
 
-if __name__ == '__main__':
-
-    connect = database.connect(host='192.168.9.109', user='root', password='110119', database='test')
-    cursor = connect.cursor()
-
+def insert_video_list():
     for i in range(START_PAGE, TOTAL_PAGE + 1):
         request_url = MAIN_URL + str(i)
         print(request_url)
@@ -139,9 +151,44 @@ if __name__ == '__main__':
         video_result = get_video_list(html_res)
         print(i)
         try:
-            cursor.executemany(INSERT_VIDEO_LIST, video_result)
+            CURSOR.executemany(INSERT_VIDEO_LIST, video_result)
         except (IntegrityError, InterfaceError):
             print("重复")
-        connect.commit()
+        CONNECT.commit()
         time.sleep(SLEEP_TIME)
-    connect.close()
+    CONNECT.close()
+
+
+def update_video_list():
+    for i in range(START_PAGE, TOTAL_PAGE + 1):
+        request_url = MAIN_URL + TYPE[2]
+        PARAM['page'] = i
+        html_res = get_html_response(request_url, PARAM)
+        video_result = get_video_list(html_res)
+        for url in video_result:
+            try:
+                CURSOR.execute(UPDATE_VIDEO_LIST, update_video_info(url, TYPE[2]))
+            except (IntegrityError, InterfaceError):
+                print("重复")
+        CONNECT.commit()
+        time.sleep(SLEEP_TIME)
+    CONNECT.close()
+
+
+# 获取视频更新信息
+def update_video_info(video_info, type):
+    update_info = []
+    update_info.append(get_video_id(video_info[1]))
+    update_info.append(type)
+    update_info.append(video_info[0])
+    return update_info
+
+
+# 获取视频 id
+def get_video_id(video_url):
+    match_result = VIDEO_URL_RULE.match(video_url)
+    return int(match_result.group(1))
+
+
+if __name__ == '__main__':
+    update_video_list()
