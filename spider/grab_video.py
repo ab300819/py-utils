@@ -39,7 +39,7 @@ PREFIX = 'http:'
 MAIN_URL = 'http://www.888tv.co/videos/'
 TYPE = ['3d', 'amateur', 'japanese', 'selfie', 'western']
 PARAM = {'page': 1}
-TOTAL_PAGE = 32
+TOTAL_PAGE = 1
 START_PAGE = 1
 SLEEP_TIME = 9
 US_TAG = 'HD_US'
@@ -60,13 +60,14 @@ CURSOR = CONNECT.cursor()
 INSERT_VIDEO_LIST = 'INSERT INTO video_list(title,video_id,url,video_type,rate,download_status) values (%s,%s,%s,%s,%s,%s)'
 UPDATE_VIDEO_LIST = 'UPDATE video_list SET video_id=%s,video_type=%s where title=%s'
 DELETE_VIDEO_LIST = ''
-SELECT_VIDEO_LIST = ''
+SELECT_VIDEO_LIST = 'SELECT id,url FROM video_list'
 
 # regex
 VIDEO_FILE_URL_RULE = re.compile('^[http|//].+video\d+\.ts$')
 VIDEO_URL_RULE = re.compile('^/video/(\d+)/.+')
 
 
+# 获取网页内容
 def get_html_response(url, param=None):
     if param is None:
         html_source = rqs.get(url, headers=HEADER)
@@ -76,6 +77,7 @@ def get_html_response(url, param=None):
     return html_source.text
 
 
+# 获取视频列表
 def get_video_list(html):
     video_list_result = []
     html_parse = pq(html)
@@ -93,6 +95,7 @@ def get_video_list(html):
     return video_list_result
 
 
+# 获取视频文件列表
 def get_video_file(html):
     html_parse = pq(html)
     video_source_list = html_parse('source')
@@ -107,6 +110,7 @@ def get_video_file(html):
             return element.attr('src')
 
 
+# 获取视频 url
 def get_video_file_url(url):
     video_url_list = []
 
@@ -120,6 +124,7 @@ def get_video_file_url(url):
     return [PREFIX + x for x in video_url_list if PREFIX not in x]
 
 
+# 创建批量下载
 def download_video_list(title, url_List):
     result_list = []
 
@@ -131,6 +136,7 @@ def download_video_list(title, url_List):
     return result_list
 
 
+# 移除字符串符号
 def remove_str(source, target):
     return source.rstrip(target)
 
@@ -150,36 +156,28 @@ def insert_video_list():
         html_res = get_html_response(request_url)
         video_result = get_video_list(html_res)
         print(i)
-        try:
-            CURSOR.executemany(INSERT_VIDEO_LIST, video_result)
-        except (IntegrityError, InterfaceError):
-            print("重复")
-        CONNECT.commit()
+        save_multi(INSERT_VIDEO_LIST, video_result)
         time.sleep(SLEEP_TIME)
-    CONNECT.close()
+    CONNECT.commit()
 
 
-def update_video_list():
+def update_video_list(vide_type):
     for i in range(START_PAGE, TOTAL_PAGE + 1):
-        request_url = MAIN_URL + TYPE[2]
+        request_url = MAIN_URL + vide_type
         PARAM['page'] = i
         html_res = get_html_response(request_url, PARAM)
         video_result = get_video_list(html_res)
         for url in video_result:
-            try:
-                CURSOR.execute(UPDATE_VIDEO_LIST, update_video_info(url, TYPE[2]))
-            except (IntegrityError, InterfaceError):
-                print("重复")
+            save_single(UPDATE_VIDEO_LIST, update_video_info(url, vide_type))
         CONNECT.commit()
         time.sleep(SLEEP_TIME)
-    CONNECT.close()
 
 
 # 获取视频更新信息
-def update_video_info(video_info, type):
+def update_video_info(video_info, video_type):
     update_info = []
     update_info.append(get_video_id(video_info[1]))
-    update_info.append(type)
+    update_info.append(video_type)
     update_info.append(video_info[0])
     return update_info
 
@@ -190,5 +188,21 @@ def get_video_id(video_url):
     return int(match_result.group(1))
 
 
+# 保存单条
+def save_single(sql, data):
+    try:
+        CURSOR.execute(sql, data)
+    except (IntegrityError, InterfaceError):
+        print("重复")
+
+
+def save_multi(sql, dataList):
+    try:
+        CURSOR.executemany(sql, dataList)
+    except (IntegrityError, InterfaceError):
+        print("重复")
+
+
 if __name__ == '__main__':
     update_video_list()
+    CONNECT.close()
