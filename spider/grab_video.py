@@ -124,22 +124,13 @@ def get_video_file(html):
 
 # 获取视频 url
 def get_video_file_url(id, url):
-    video_url_list = []
-    video_url = []
-    video_file_list=[]
 
     if PREFIX not in url:
         url = PREFIX + url
     video_url_request = get_html_response(url)
     video_file_list = video_url_request.split('\n')
-    if video_file_list:
-        video_url = [x for x in video_file_list if VIDEO_URL_RULE.match(x)]
-        print(video_url)
 
-    for i in video_url:
-        video_url_list.append(tuple([id, i, 0]))
-
-    return video_url_list
+    return [tuple([id, x, 0]) for x in video_file_list if VIDEO_FILE_URL_RULE.match(x)]
 
 
 # 创建批量下载
