@@ -36,7 +36,7 @@ HEADER = {'user-agent': USER_AGENT}
 
 # target
 PREFIX = 'http:'
-MAIN_URL = 'http://www.888tv.co/videos/'
+MAIN_URL = 'http://www.888tv.co'
 TYPE = ['3d', 'amateur', 'japanese', 'selfie', 'western']
 PARAM = {'page': 1}
 TOTAL_PAGE = 1
@@ -61,6 +61,10 @@ INSERT_VIDEO_LIST = 'INSERT INTO video_list(title,video_id,url,video_type,rate,d
 UPDATE_VIDEO_LIST = 'UPDATE video_list SET video_id=%s,video_type=%s where title=%s'
 DELETE_VIDEO_LIST = ''
 SELECT_VIDEO_LIST = 'SELECT id,url FROM video_list'
+SELECT_VIDEO_ID_LIST_WITH_PAGE = 'SELECT id,url FROM video_list WHERE video_type=%s LIMIT %s OFFSET %s'
+SELECT_VIDEO_ID_LIST = 'SELECT id,url FROM video_list WHERE video_type=%s ORDER BY rate DESC'
+SELECT_VIDEO_FILE_LIST = 'SELECT vf.url FROM video_list vl JOIN video_file vf ON vf.video_id=vl.id WHERE vl.id=%s'
+SAVE_VIDEO_FILE_LIST = 'INSERT INTO video_file(video_id,url,download_status) VALUES (%s,%s,%s)'
 
 # regex
 VIDEO_FILE_URL_RULE = re.compile('^[http|//].+video\d+\.ts$')
@@ -78,7 +82,7 @@ def get_html_response(url, param=None):
 
 
 # 获取视频列表
-def get_video_list(html):
+def get_video_list(html, video_type=None, multi=True):
     video_list_result = []
     html_parse = pq(html)
     video_list = html_parse('.col-sm-6.col-md-4.col-lg-4')
@@ -87,11 +91,19 @@ def get_video_list(html):
         single_video = []
         video = pq(i)
         single_video.append(video('span').text())
+        single_video.append(get_video_id(video('a').attr('href')))
         single_video.append(video('a').attr('href'))
+        if video_type:
+            single_video.append(video_type)
+        else:
+            single_video.append('')
         single_video.append(remove_str(video('b').text(), '%'))
         single_video.append(0)
         print(single_video)
-        video_list_result.append(tuple(single_video))
+        if multi:
+            video_list_result.append(tuple(single_video))
+        else:
+            video_list_result.append(single_video)
     return video_list_result
 
 
@@ -100,7 +112,7 @@ def get_video_file(html):
     html_parse = pq(html)
     video_source_list = html_parse('source')
 
-    if len(video_source_list) == 0:
+    if len(video_source_list) == 1:
         element = pq(video_source_list[0])
         return element.attr('src')
 
@@ -111,26 +123,23 @@ def get_video_file(html):
 
 
 # 获取视频 url
-def get_video_file_url(url):
-    video_url_list = []
+def get_video_file_url(id, url):
 
-    if PREFIX in url:
+    if PREFIX not in url:
         url = PREFIX + url
     video_url_request = get_html_response(url)
-    video_list = video_url_request.split('\n')
-    if video_list:
-        video_url_list = [x for x in video_list if VIDEO_URL_RULE.match(x)]
+    video_file_list = video_url_request.split('\n')
 
-    return [PREFIX + x for x in video_url_list if PREFIX not in x]
+    return [tuple([id, x, 0]) for x in video_file_list if VIDEO_FILE_URL_RULE.match(x)]
 
 
 # 创建批量下载
-def download_video_list(title, url_List):
+def download_video_list(title, url_list):
     result_list = []
 
     server = rpc.ServerProxy(ARIA2_URL)
-    if url_List:
-        for i in url_List:
+    if url_list:
+        for i in url_list:
             result = server.aria2.addUri(ARIA2_TOKEN, [i], {ARIA2_DIR: FILE_PATH + title})
             result_list.append(result)
     return result_list
@@ -149,7 +158,17 @@ def get_list():
     pass
 
 
-def insert_video_list():
+# 判断该条有没有视频
+def check_exist_video_file(video_id):
+    video_file_list = query(SELECT_VIDEO_FILE_LIST, video_id)
+    if video_file_list:
+        return True
+    else:
+        return False
+
+
+# 整页保存视频列表
+def insert_multi_video_list():
     for i in range(START_PAGE, TOTAL_PAGE + 1):
         request_url = MAIN_URL + str(i)
         print(request_url)
@@ -161,25 +180,34 @@ def insert_video_list():
     CONNECT.commit()
 
 
-def update_video_list(vide_type):
+# 单条保存视频信息
+def insert_single_video_list(total_page, video_type):
+    for i in range(START_PAGE, total_page):
+        request_url = MAIN_URL + video_type
+        PARAM['page'] = i
+        html_res = get_html_response(request_url, PARAM)
+        video_result = get_video_list(html_res, multi=False)
+        for url in video_result:
+            save_single(INSERT_VIDEO_LIST, url)
+        CONNECT.commit()
+        time.sleep(SLEEP_TIME)
+
+
+def update_video_list(video_type):
     for i in range(START_PAGE, TOTAL_PAGE + 1):
-        request_url = MAIN_URL + vide_type
+        request_url = MAIN_URL + video_type
         PARAM['page'] = i
         html_res = get_html_response(request_url, PARAM)
         video_result = get_video_list(html_res)
         for url in video_result:
-            save_single(UPDATE_VIDEO_LIST, update_video_info(url, vide_type))
+            save_single(UPDATE_VIDEO_LIST, update_video_info(url, video_type))
         CONNECT.commit()
         time.sleep(SLEEP_TIME)
 
 
 # 获取视频更新信息
 def update_video_info(video_info, video_type):
-    update_info = []
-    update_info.append(get_video_id(video_info[1]))
-    update_info.append(video_type)
-    update_info.append(video_info[0])
-    return update_info
+    return [get_video_id(video_info[1]), video_type, video_info[0]]
 
 
 # 获取视频 id
@@ -192,17 +220,41 @@ def get_video_id(video_url):
 def save_single(sql, data):
     try:
         CURSOR.execute(sql, data)
+        print('成功：' + str(data))
     except (IntegrityError, InterfaceError):
         print("重复")
 
 
-def save_multi(sql, dataList):
+# 一次保存多条
+def save_multi(sql, data_list):
     try:
-        CURSOR.executemany(sql, dataList)
+        CURSOR.executemany(sql, data_list)
     except (IntegrityError, InterfaceError):
         print("重复")
+
+
+def query(sql, condition=None):
+    query_result = []
+    try:
+        if condition:
+            CURSOR.execute(sql, condition)
+        else:
+            CURSOR.execute(sql)
+        query_result = CURSOR.fetchall()
+    except(IntegrityError, InterfaceError):
+        print()
+    return query_result
 
 
 if __name__ == '__main__':
-    update_video_list()
+    video_id_list = query(SELECT_VIDEO_ID_LIST, [TYPE[3]])
+    for video in video_id_list:
+        if MAIN_URL not in video[1]:
+            video_list = get_video_file(get_html_response(MAIN_URL + video[1]))
+        else:
+            video_list = get_video_file(get_html_response(video[1]))
+        video_file = get_video_file_url(video[0], video_list)
+        save_multi(SAVE_VIDEO_FILE_LIST, video_file)
+        CONNECT.commit()
+        time.sleep(SLEEP_TIME)
     CONNECT.close()
