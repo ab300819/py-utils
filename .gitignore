@@ -665,3 +665,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+
+data/*
+!data/data_list.md
