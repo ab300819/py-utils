@@ -34,5 +34,5 @@ if __name__ == '__main__':
         result.append(md5_sum)
     with open(root_path.strip(os.sep) + '_file_md5', 'w') as f:
         for file in result:
-            cell = ','.join(file) + '\n'
+            cell = ':'.join(file) + '\n'
             f.write(cell)
