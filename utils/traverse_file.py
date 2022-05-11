@@ -2,7 +2,7 @@
 
 __author__ = 'mason'
 
-import hashlib as hash
+import hashlib as codec
 import os
 import sys
 
@@ -13,14 +13,13 @@ import sys
 
 def find_all_file(root):
     for root, dir_list, file_list in os.walk(root):
-        for f in file_list:
-            full_name = os.path.join(root, f)
-            yield full_name
+        for file_name in file_list:
+            yield os.path.join(root, file_name)
 
 
 def check_md5(file_name: str):
     with open(file_name, 'rb') as f:
-        md5 = hash.md5()
+        md5 = codec.md5()
         md5.update(f.read())
         mdd_hash = str(md5.hexdigest())
     return mdd_hash
