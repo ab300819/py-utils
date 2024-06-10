@@ -35,7 +35,8 @@ def parse_row(log):
 if __name__ == '__main__':
     csv_data = []
     with open('fce-exec-log.log', 'r') as f:
-        csv_data.append(parse_row(log))
+        for row in f.readlines():
+            csv_data.append(parse_row(row))
 
     # 写入 CSV 文件
     with open("fce-exec-log.csv", mode='w', newline='') as file:
